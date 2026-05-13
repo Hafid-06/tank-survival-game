@@ -8,6 +8,8 @@ Group members:
 
 ## How to run the game: 
 
+- `git lfs install`
+
 - `npm install`
 
 - `npm run dev`
