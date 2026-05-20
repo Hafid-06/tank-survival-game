@@ -24,7 +24,7 @@ export function createScene(engine, canvas) {
     tank.position.y = 0.75;
     tank.isVisible = false; 
 
-    BABYLON.SceneLoader.ImportMesh("", "/models/", "tank.glb", scene, (meshes) => {
+    BABYLON.SceneLoader.ImportMesh("", "", "/models/tank.glb", scene, (meshes) => {
         const tankModel = meshes[0];
         tankModel.parent = tank; 
         tankModel.scaling.setAll(0.6); 
@@ -207,7 +207,7 @@ export function createScene(engine, canvas) {
 
     let coinContainer = null;
     const activeCoins = [];
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "coin.glb", scene, (container) => { coinContainer = container; });
+    BABYLON.SceneLoader.LoadAssetContainer("", "/models/coin.glb", scene, (container) => { coinContainer = container; });
 
     const spawnCoinAt = (pos) => {
         if (!coinContainer) return;
@@ -275,21 +275,21 @@ export function createScene(engine, canvas) {
     const enemies = [];
     let zombieContainer = null, baseRunAnim = null, baseAttackAnim = null, loadedCount = 0;
     
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "zombie_run.glb", scene, (container) => {
+    BABYLON.SceneLoader.LoadAssetContainer("", "/models/zombie_run.glb", scene, (container) => {
         zombieContainer = container; 
         if (container.animationGroups && container.animationGroups.length > 0) baseRunAnim = container.animationGroups[0];
         checkAllLoaded();
     });
-    BABYLON.SceneLoader.ImportMesh("", "/models/", "zombie_attack.glb", scene, (meshes, particleSystems, skeletons, animationGroups) => {
+    BABYLON.SceneLoader.ImportMesh("", "", "/models/zombie_attack.glb", scene, (meshes, particleSystems, skeletons, animationGroups) => {
         meshes[0].position.y = -1000; meshes.forEach(m => m.isVisible = false); 
         if (animationGroups.length > 0) { baseAttackAnim = animationGroups[0]; baseAttackAnim.stop(); }
         checkAllLoaded();
     });
 
     let bossContainer = null;
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "zombie_boss.glb", scene, (container) => { bossContainer = container; }, null, () => {});
+    BABYLON.SceneLoader.LoadAssetContainer("", "/models/zombie_boss.glb", scene, (container) => { bossContainer = container; }, null, () => {});
     let kamikazeContainer = null;
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "zombie_kamikaze.glb", scene, (container) => { kamikazeContainer = container; }, null, () => {});
+    BABYLON.SceneLoader.LoadAssetContainer("", "/models/zombie_kamikaze.glb", scene, (container) => { kamikazeContainer = container; }, null, () => {});
 
     function checkAllLoaded() { loadedCount++; if (loadedCount === 2) for (let i = 0; i < 8; i++) spawnEnemy(); }
 

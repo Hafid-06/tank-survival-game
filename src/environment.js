@@ -18,7 +18,7 @@ export function createEnvironment(scene) {
     const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size: 1000.0}, scene);
     const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
     skyboxMaterial.backFaceCulling = false; 
-    skyboxMaterial.reflectionTexture = new BABYLON.EquiRectangularCubeTexture("/decor/sky.jpg", scene, 1024);
+    skyboxMaterial.reflectionTexture = new BABYLON.EquiRectangularCubeTexture("//decor/sky.jpg", scene, 1024);
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
     skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -27,7 +27,7 @@ export function createEnvironment(scene) {
     // Setup ground with tiled texture
     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 150, height: 150 }, scene);
     const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
-    groundMat.diffuseTexture = new BABYLON.Texture("/decor/ground.jpg", scene);
+    groundMat.diffuseTexture = new BABYLON.Texture("//decor/ground.jpg", scene);
     groundMat.diffuseTexture.uScale = 15;
     groundMat.diffuseTexture.vScale = 15;
     groundMat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05); 
@@ -56,7 +56,7 @@ export function createObstacles(scene, shadowGenerator) {
         rockHitbox.rotation.y = Math.random() * Math.PI;
         rockHitbox.isVisible = false; // Hitbox is invisible for physics
         
-        BABYLON.SceneLoader.ImportMesh("", "", "decor/stone.glb", scene, (meshes) => {
+        BABYLON.SceneLoader.ImportMesh("", "", "/decor/stone.glb", scene, (meshes) => {
             if (rockHitbox.isDisposed()) { meshes.forEach(m => m.dispose()); return; }
             const rockModel = meshes[0];
             rockModel.parent = rockHitbox;
@@ -68,11 +68,11 @@ export function createObstacles(scene, shadowGenerator) {
         obstacles.push(rockHitbox);
     }
 
-    // Spawn decorative trees
+    // Spawn /decorative trees
     for (let i = 0; i < 5; i++) {
         const xPos = (Math.random() * 80) - 40;
         const zPos = (Math.random() * 80) - 40;
-        BABYLON.SceneLoader.ImportMesh("", "", "decor/tree.glb", scene, (meshes) => {
+        BABYLON.SceneLoader.ImportMesh("", "", "/decor/tree.glb", scene, (meshes) => {
             const treeModel = meshes[0];
             treeModel.position = new BABYLON.Vector3(xPos, 5, zPos); 
             treeModel.rotationQuaternion = null; 
@@ -89,7 +89,7 @@ export function createObstacles(scene, shadowGenerator) {
             barrelHitbox.position.z = (Math.random() * 80) - 40;
             barrelHitbox.position.y = 0.75;
             barrelHitbox.isVisible = false; 
-            BABYLON.SceneLoader.ImportMesh("", "", "decor/nuclear_barrel.glb", scene, (meshes) => {
+            BABYLON.SceneLoader.ImportMesh("", "", "/decor/nuclear_barrel.glb", scene, (meshes) => {
                 if (barrelHitbox.isDisposed()) { meshes.forEach(m => m.dispose()); return; }
                 const barrelModel = meshes[0];
                 barrelModel.parent = barrelHitbox;
@@ -106,7 +106,7 @@ export function createObstacles(scene, shadowGenerator) {
 
     // Spawn complex building models with precise hitbox matching
     function spawnHouse(x, z, yRotation = 0) {
-        BABYLON.SceneLoader.ImportMesh("", "", "decor/house.glb", scene, (meshes) => {
+        BABYLON.SceneLoader.ImportMesh("", "", "/decor/house.glb", scene, (meshes) => {
             const houseModel = meshes[0];
             houseModel.position = new BABYLON.Vector3(x, 0, z);
             houseModel.rotationQuaternion = null;
@@ -122,7 +122,7 @@ export function createObstacles(scene, shadowGenerator) {
     spawnHouse(30, 30, Math.PI / 4);
 
     function spawnDestroyedCar(x, z, yRotation = 0) {
-        BABYLON.SceneLoader.ImportMesh("", "", "decor/destroyed_car.glb", scene, (meshes) => {
+        BABYLON.SceneLoader.ImportMesh("", "", "/decor/destroyed_car.glb", scene, (meshes) => {
             const carModel = meshes[0];
             carModel.position = new BABYLON.Vector3(x, 0, z);
             carModel.rotationQuaternion = null;
@@ -140,7 +140,7 @@ export function createObstacles(scene, shadowGenerator) {
     spawnDestroyedCar(15, -25, -Math.PI / 6);
 
     function spawnDestroyedBus(x, z, yRotation = 0) {
-        BABYLON.SceneLoader.ImportMesh("", "", "decor/destroyed_bus.glb", scene, (meshes) => {
+        BABYLON.SceneLoader.ImportMesh("", "", "/decor/destroyed_bus.glb", scene, (meshes) => {
             const busModel = meshes[0];
             busModel.position = new BABYLON.Vector3(x, 0, z);
             busModel.rotationQuaternion = null;
@@ -158,7 +158,7 @@ export function createObstacles(scene, shadowGenerator) {
 
     // Populate level boundaries using a loop
     function spawnFence(x, z, yRotation) {
-        BABYLON.SceneLoader.ImportMesh("", "", "decor/fence.glb", scene, (meshes) => {
+        BABYLON.SceneLoader.ImportMesh("", "", "/decor/fence.glb", scene, (meshes) => {
             const fenceModel = meshes[0];
             fenceModel.position = new BABYLON.Vector3(x, 0, z);
             fenceModel.rotationQuaternion = null;
@@ -178,7 +178,7 @@ export function createObstacles(scene, shadowGenerator) {
     }
 
     function spawnGuard(x, z, yRotation) {
-        BABYLON.SceneLoader.ImportMesh("", "", "decor/guard.glb", scene, (meshes) => {
+        BABYLON.SceneLoader.ImportMesh("", "", "/decor/guard.glb", scene, (meshes) => {
             const guardModel = meshes[0];
             guardModel.position = new BABYLON.Vector3(x, 0, z);
             guardModel.rotationQuaternion = null;
