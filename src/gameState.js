@@ -1,9 +1,9 @@
-// src/gameState.js
-
+// Centralized state management: stores player stats, unlockables, and active power-ups
 export const GameState = {
     isGameStarted: false,
     isPaused: false,
     isGameOver: false,
+    isTesterMode: false,
     
     score: 0,
     lives: 3,
@@ -26,9 +26,11 @@ export const GameState = {
     globalZombieSoundCooldown: 0,
     
     unlockedAmmo: { base: true, smg: false, missile: false, heavy: false },
-    currentAmmo: 'base'
+    currentAmmo: 'base',
+    unlockedAlly: false
 };
 
+// Possible states for the enemy AI Finite State Machine (FSM)
 export const EnemyState = {
     PATROL: 'patrol',
     CHASE: 'chase',
@@ -36,6 +38,7 @@ export const EnemyState = {
     CHARGE: 'charge'
 };
 
+// Configurable game balance parameters
 export const Constants = {
     DASH_DURATION: 0.7,
     DASH_COOLDOWN: 5.0,

@@ -1,13 +1,15 @@
-// src/audioManager.js
 import * as BABYLON from "@babylonjs/core";
+import "@babylonjs/loaders";
 
+// Handles all game audio: SFX, music, and spatial sound support
 export class AudioManager {
     constructor(scene) {
         this.scene = scene;
         this.settings = { masterVolume: 0.8, muted: false };
-        this.sounds = {};
-        this.htmlAudios = {};
+        this.sounds = {}; // Babylon.js sound objects
+        this.htmlAudios = {}; // HTML5 Audio element fallbacks
         
+        // Base volume definitions for consistent balancing
         this.volumes = {
             shoot: 0.8, 
             smgShoot: 0.8, 
@@ -39,6 +41,7 @@ export class AudioManager {
         try { localStorage.setItem('tankSurvivalSettings', JSON.stringify(this.settings)); } catch (e) {}
     }
 
+    // Adjusts volume levels globally based on settings
     applySettings() {
         const vol = this.settings.muted ? 0 : this.settings.masterVolume;
         
@@ -53,6 +56,7 @@ export class AudioManager {
         }
     }
 
+    // Loads sounds using Babylon's engine for native 3D/spatial audio support
     initBabylonSounds() {
         const createSound = (name, path, options = {}) => {
             this.sounds[name] = { loaded: false, babylonSound: null };
@@ -73,6 +77,7 @@ export class AudioManager {
         createSound("backgroundMusic", "/sounds/music.mp3", { volume: this.volumes.backgroundMusic, loop: true });
     }
 
+    // Initializes HTML5 audio elements as a robust fallback system
     initHtmlAudios() {
         const createAudioEl = (name, path, options = {}) => {
             const el = new Audio(path);
@@ -118,6 +123,7 @@ export class AudioManager {
         } catch(e) {}
     }
 
+    // Resumes audio context if suspended by browser autoplay policies
     unlockNow() {
         try {
             const engineObj = this.scene.getEngine();
@@ -128,6 +134,7 @@ export class AudioManager {
         } catch (e) { }
     }
 
+    // Adds event listeners to force audio context unlock on first user interaction
     setupAudioContextUnlock() {
         const unlock = () => {
             this.unlockNow();
@@ -138,6 +145,7 @@ export class AudioManager {
         window.addEventListener('keydown', unlock);
     }
 
+    // Playback logic: supports cloning for rapid-fire effects (overlapping sounds)
     playSound(name, meshToAttach = null) {
         if (this.settings.muted || this.volumes[name] === 0.0) return;
         

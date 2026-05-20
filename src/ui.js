@@ -1,11 +1,12 @@
-// src/ui.js
 import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
 import { GameState } from "./gameState.js";
 
+// Main UI orchestrator: creates all HUD, menus, and interaction layers
 export function createUI(scene, audioManager, callbacks) {
     const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
+    // Wave notification display
     const waveNotify = new GUI.TextBlock();
     waveNotify.text = "";
     waveNotify.color = "white";
@@ -34,11 +35,13 @@ export function createUI(scene, audioManager, callbacks) {
         } catch (e) { }
     }
 
+    // Main game HUD container
     const hudContainer = new GUI.Rectangle();
     hudContainer.thickness = 0;
     hudContainer.isVisible = false;
     advancedTexture.addControl(hudContainer);
 
+    // Visual damage overlay (screen flash)
     const damageOverlay = new GUI.Rectangle();
     damageOverlay.width = "100%";
     damageOverlay.height = "100%";
@@ -48,6 +51,7 @@ export function createUI(scene, audioManager, callbacks) {
     damageOverlay.zIndex = -1;
     hudContainer.addControl(damageOverlay);
 
+    // How to play instructions panel
     const howToPanel = new GUI.Rectangle();
     howToPanel.width = "560px";
     howToPanel.height = "720px";
@@ -93,6 +97,7 @@ export function createUI(scene, audioManager, callbacks) {
     });
     howToPanel.addControl(howToClose);
 
+    // Settings panel for audio controls
     const settingsPanel = new GUI.Rectangle();
     settingsPanel.width = "460px";
     settingsPanel.height = "300px";
@@ -172,6 +177,7 @@ export function createUI(scene, audioManager, callbacks) {
     });
     settingsPanel.addControl(settingsClose);
 
+    // HUD top stats panel
     const topPanel = new GUI.Rectangle();
     topPanel.width = "300px";
     topPanel.height = "170px"; 
@@ -221,6 +227,7 @@ export function createUI(scene, audioManager, callbacks) {
     coinsText.height = "40px";
     topPanel.addControl(coinsText);
 
+    // Bonus info toggle button
     const bonusInfoBtn = GUI.Button.CreateSimpleButton("bonusInfoBtn", "BONUS INFO");
     bonusInfoBtn.width = "160px";
     bonusInfoBtn.height = "40px";
@@ -283,6 +290,7 @@ export function createUI(scene, audioManager, callbacks) {
         }
     });
 
+    // Shop system button
     const shopBtn = GUI.Button.CreateSimpleButton("shopBtn", "SHOP");
     shopBtn.width = "160px";
     shopBtn.height = "40px";
@@ -329,6 +337,7 @@ export function createUI(scene, audioManager, callbacks) {
     shopMessage.isPointerBlocker = false;
     shopPanel.addControl(shopMessage);
 
+    // Dynamic creator for shop items
     function createShopItem(name, cost, ammoType, description) {
         let container = new GUI.Rectangle();
         container.width = "460px"; container.height = "90px"; container.thickness = 0;
@@ -370,6 +379,25 @@ export function createUI(scene, audioManager, callbacks) {
     const buyMissileBtn = createShopItem("Missile", 30, "missile", "Area damage (4m radius, 2 Dmg)");
     const buyHeavyBtn = createShopItem("Heavy Cannon", 50, "heavy", "Huge area damage (8m radius, 5 Dmg)");
 
+    let allyBtn = GUI.Button.CreateSimpleButton("buy_ally", "BUY ALLY TANK (100 coins)");
+    allyBtn.width = "460px";
+    allyBtn.height = "50px";
+    allyBtn.color = "white";
+    allyBtn.background = "blue";
+    allyBtn.onPointerClickObservable.add(() => {
+        if (!GameState.unlockedAlly && GameState.coinsCount >= 100) {
+            GameState.coinsCount -= 100;
+            coinsText.text = "COINS: " + GameState.coinsCount;
+            GameState.unlockedAlly = true;
+            allyBtn.background = "gray";
+            allyBtn.textBlock.text = "ALLY BOUGHT";
+        } else if (!GameState.unlockedAlly) {
+            shopMessage.text = "❌ You don't have enough coins!";
+            setTimeout(() => { shopMessage.text = ""; }, 2000);
+        }
+    });
+    shopStack.addControl(allyBtn);
+
     const shopCloseBtn = GUI.Button.CreateSimpleButton("shopCloseBtn", "CLOSE");
     shopCloseBtn.width = "160px"; shopCloseBtn.height = "44px"; shopCloseBtn.color = "white";
     shopCloseBtn.cornerRadius = 12; shopCloseBtn.background = "#666"; shopCloseBtn.top = "190px";
@@ -383,6 +411,7 @@ export function createUI(scene, audioManager, callbacks) {
         if (!GameState.isGameOver) { shopPanel.isVisible = true; GameState.isPaused = true; }
     });
 
+    // Weapon selection bar at the bottom
     const ammoContainer = new GUI.Rectangle();
     ammoContainer.width = "580px"; ammoContainer.height = "60px"; ammoContainer.cornerRadius = 15;
     ammoContainer.color = "White"; ammoContainer.thickness = 2; ammoContainer.background = "rgba(10, 10, 10, 0.8)";
@@ -423,6 +452,7 @@ export function createUI(scene, audioManager, callbacks) {
     }
     updateAmmoUI();
 
+    // Wave indicator display
     const wavePanel = new GUI.Rectangle();
     wavePanel.width = "200px"; wavePanel.height = "60px"; wavePanel.cornerRadius = 20; wavePanel.color = "Black";
     wavePanel.thickness = 2; wavePanel.background = "rgba(255, 0, 0, 0.2)"; wavePanel.top = "20px";
@@ -433,6 +463,7 @@ export function createUI(scene, audioManager, callbacks) {
     waveText.text = "WAVE: 1"; waveText.color = "DarkRed"; waveText.fontSize = 30; waveText.fontWeight = "bold"; waveText.height = "40px";
     wavePanel.addControl(waveText);
 
+    // Dash ability UI indicator
     const dashPanel = new GUI.Rectangle();
     dashPanel.width = "200px"; dashPanel.height = "60px"; dashPanel.cornerRadius = 20; dashPanel.color = "Black";
     dashPanel.thickness = 2; dashPanel.background = "rgba(0, 255, 255, 0.3)"; dashPanel.top = "100px";
@@ -473,7 +504,7 @@ export function createUI(scene, audioManager, callbacks) {
     menuBtnGO.onPointerClickObservable.add(callbacks.onMenu);
     gameOverButtonsPanel.addControl(menuBtnGO);
 
-    // Pause Menu
+    // Pause menu overlay
     const pauseMenu = new GUI.Rectangle();
     pauseMenu.width = "400px"; pauseMenu.height = "360px"; pauseMenu.cornerRadius = 20; pauseMenu.color = "White";
     pauseMenu.thickness = 3; pauseMenu.background = "rgba(0, 0, 0, 0.9)"; pauseMenu.isVisible = false; pauseMenu.zIndex = 100; 
@@ -518,7 +549,7 @@ export function createUI(scene, audioManager, callbacks) {
     pauseBtn.onPointerClickObservable.add(callbacks.onPauseToggle);
     hudContainer.addControl(pauseBtn);
 
-    // Main Menu
+    // Initial game menu
     const menuContainer = new GUI.Rectangle();
     menuContainer.background = "rgba(0, 0, 0, 0.8)"; menuContainer.thickness = 0;
     advancedTexture.addControl(menuContainer);
@@ -527,34 +558,45 @@ export function createUI(scene, audioManager, callbacks) {
     titleText.text = "TANK SURVIVAL"; titleText.color = "White"; titleText.fontSize = 60; titleText.fontWeight = "bold";
     titleText.top = "-150px"; titleText.height = "80px"; menuContainer.addControl(titleText);
 
+    const testerBtn = GUI.Button.CreateSimpleButton("testerBtn", "MODE: NORMAL");
+    testerBtn.width = "200px"; testerBtn.height = "40px"; testerBtn.color = "white"; testerBtn.cornerRadius = 10;
+    testerBtn.background = "#555"; testerBtn.top = "-90px"; testerBtn.fontSize = 18;
+    testerBtn.onPointerClickObservable.add(() => {
+        GameState.isTesterMode = !GameState.isTesterMode;
+        testerBtn.textBlock.text = GameState.isTesterMode ? "MODE: TESTER" : "MODE: NORMAL";
+        testerBtn.background = GameState.isTesterMode ? "orange" : "#555";
+    });
+    menuContainer.addControl(testerBtn);
+
     const menuHighScoreText = new GUI.TextBlock();
     menuHighScoreText.text = "🏆 HIGH SCORE: " + GameState.highScore; menuHighScoreText.color = "Gold"; menuHighScoreText.fontSize = 30;
-    menuHighScoreText.fontWeight = "bold"; menuHighScoreText.top = "-80px"; menuHighScoreText.height = "50px";
+    menuHighScoreText.fontWeight = "bold"; menuHighScoreText.top = "-40px"; menuHighScoreText.height = "50px";
     menuContainer.addControl(menuHighScoreText);
 
     const instructionsText = new GUI.TextBlock();
     instructionsText.text = "ZQSD or WASD to move - SPACE to shoot\nSHIFT to dash - ESC to pause\nSurvive the waves!";    
-    instructionsText.color = "LightGray"; instructionsText.fontSize = 24; instructionsText.top = "-20px"; instructionsText.height = "120px";
+    instructionsText.color = "LightGray"; instructionsText.fontSize = 24; instructionsText.top = "30px"; instructionsText.height = "120px";
     menuContainer.addControl(instructionsText);
 
     const playBtn = GUI.Button.CreateSimpleButton("playBtn", "PLAY");
     playBtn.width = "200px"; playBtn.height = "60px"; playBtn.color = "white"; playBtn.cornerRadius = 20;
-    playBtn.background = "green"; playBtn.top = "100px"; playBtn.fontSize = 30; playBtn.fontWeight = "bold";
+    playBtn.background = "green"; playBtn.top = "120px"; playBtn.fontSize = 30; playBtn.fontWeight = "bold";
     playBtn.onPointerClickObservable.add(callbacks.onPlay);
     menuContainer.addControl(playBtn);
 
     const howToBtnMenu = GUI.Button.CreateSimpleButton("howToBtnMenu", "❓ HOW TO PLAY");
     howToBtnMenu.width = "180px"; howToBtnMenu.height = "48px"; howToBtnMenu.color = "white"; howToBtnMenu.cornerRadius = 12;
-    howToBtnMenu.background = "#333"; howToBtnMenu.top = "180px"; howToBtnMenu.fontSize = 18;
+    howToBtnMenu.background = "#333"; howToBtnMenu.top = "200px"; howToBtnMenu.fontSize = 18;
     howToBtnMenu.onPointerClickObservable.add(() => { howToPanel.isVisible = true; menuContainer.isVisible = false; });
     menuContainer.addControl(howToBtnMenu);
 
     const settingsBtnMenu = GUI.Button.CreateSimpleButton("settingsBtnMenu", "⚙️ SETTINGS");
     settingsBtnMenu.width = "180px"; settingsBtnMenu.height = "48px"; settingsBtnMenu.color = "white"; settingsBtnMenu.cornerRadius = 12;
-    settingsBtnMenu.background = "#444"; settingsBtnMenu.top = "240px"; settingsBtnMenu.fontSize = 18;
+    settingsBtnMenu.background = "#444"; settingsBtnMenu.top = "260px"; settingsBtnMenu.fontSize = 18;
     settingsBtnMenu.onPointerClickObservable.add(() => { settingsPanel.isVisible = true; menuContainer.isVisible = false; });
     menuContainer.addControl(settingsBtnMenu);
 
+    // Floating text creator for hit feedback and scores
     function showFloatingText(text, position) {
         const dummy = BABYLON.MeshBuilder.CreateBox("dummy", {size: 0.1}, scene);
         dummy.position = position.clone(); dummy.position.y += 2; dummy.isVisible = false;
@@ -574,6 +616,7 @@ export function createUI(scene, audioManager, callbacks) {
         scoreText, highScoreText, livesText, coinsText, waveText, dashText, bonusText,
         damageOverlay, waveNotify, shopMessage,
         buySmgBtn, buyMissileBtn, buyHeavyBtn, pauseBtn, menuHighScoreText,
+        allyBtn,
         showWave, showFloatingText, updateAmmoUI
     };
 }

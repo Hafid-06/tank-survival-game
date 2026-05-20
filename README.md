@@ -1,12 +1,42 @@
 # TANK SURVIVAL
 
+**Master 1 - Computer Science - Université Côte d'Azur - 2025-2026**
+
 ## Group
 Group members: 
 
 - EL JAGHAOUI Abdelhafid
 - BACHA Hiba
 
-## How to run the game: 
+
+## The game is available at:
+
+
+
+## Gameplay Video
+
+
+
+
+## Development Story & Team
+
+Hi! We are Abdelhafid and Hiba. Building *Tank Survival* was an intense but incredibly rewarding journey for both of us. We didn't just want to create a game; we wanted to build an experience where the environment felt truly reactive.
+
+**Our Challenges:**
+Our biggest hurdle was definitely the "Game Director." Balancing the spawning logic to create a consistent challenge was a constant back-and-forth. We also spent a lot of time debugging our autonomous ally—getting it to feel like a helpful partner rather than just another obstacle on the map took way more iteration than we initially expected!
+
+Additionally, we faced a major technical challenge with assets and hitboxes. We had to manually adjust and test the collision boundaries for every enemy and decor element to ensure they matched the visual models perfectly. It was a tedious process of trial and error, but ensuring that the physical collision felt precise and natural was essential for the game to feel satisfying.
+
+**Tester Mode:**
+We want everyone to be able to test the game mechanics easily. That’s why we included a "Tester Mode." This mode gives you 100 coins and all bullet types unlocked right from the start. It's perfect if you want to dive straight into the action and test out our upgrade system or enemy behavior without the grind.
+
+We are really proud of what we’ve built, and we hope you have as much fun playing it as we had developing it.
+
+## How to run the game locally: 
+
+- `git clone https://github.com/gamesonweb/ia-edition-tank-survival.git`
+
+- Navigate to the project directory: `cd ia-edition-tank-survival`
 
 - `git lfs install`
 
@@ -29,18 +59,74 @@ Tank_Survival/
 │   ├── environment.js   # 3D Universe: Creates lights, sky, ground, and obstacles.
 │   ├── particles.js     # Visual effects: Manages explosions and particles.
 │   └── ui.js            # Interface: Displays the HUD, menus, shop, and buttons.
+│   └── ally.js          # Ally: Manages the allied tank behavior and logic.
 ├── index.html       # Main page: Contains the game canvas (display area).
 └── package.json     # Configuration: Lists dependencies (Babylon.js, Vite) and scripts.
 ```
     
 ## Description
-A simple arcade-style survival game where the player controls a tank to eliminate waves of zombies.
+
+*Tank Survival* is an intense, arcade-style survival game where you take control of a tank. 
+Your mission is: hold your ground against endless waves of zombies. 
+As you defeat enemies, you collect coins to buy permanent upgrades and unlock new types of ammunition. 
+Keep an eye out for bonuses that appear on the map to help you in the heat of battle! 
+The difficulty increases as you progress, forcing you to stay sharp, manage your resources, and keep moving.
+
+### Know Your Enemies
+
+You aren't just fighting one type of zombie. The horde evolves as you survive, introducing new challenges:
+
+* **Rusher (Wave 1):** The standard zombie.
+* **Flanker (Wave 3):** Smarter than the average zombie; moves in unpredictable patterns to surround you.
+* **Charger / Boss (Wave 5):** A heavy-hitting mini-boss with a large health pool. Keep your distance!
+* **Spitter (Wave 5):** A tactical threat; stays at a distance and launches acidic projectiles at your tank.
+* **Kamikaze (Wave 7):** An explosive threat; moves at high speed and detonates on impact. Do not let them touch you!
+
+## Shop & Power-ups
+
+To survive longer, you’ll need to manage your resources wisely. Here is how you can boost your tank's potential during a run.
+
+### Map Bonuses
+Keep an eye out for crates that randomly appear on the map during your survival run:
+* 🟨 **Machine Gun:** Drastically increases your fire rate for a short time.
+* 🟥 **Life +1:** Adds one extra life.
+* 🟦 **Freeze:** Temporarily stops all zombies in their tracks.
+* 🟪 **Max Speed:** Gives you a temporary movement speed boost.
+
+### Weapons & Allies (Shop)
+Collect coins by defeating zombies and spend them in the shop to upgrade your arsenal:
+
+| Item | Cost | Description |
+| :--- | :--- | :--- |
+| **SMG** | 10 coins | High fire rate, perfect for thinning out hordes. |
+| **Missile** | 30 coins | Explosive rounds with Area-of-Effect (AoE) damage. |
+| **Heavy Cannon** | 50 coins | Massive damage with a larger explosive radius. |
+| **Ally Tank** | 100 coins | Your own autonomous partner that fights by your side. |
 
 ## Controls
+
+**This game is fully playable on both desktop computers and laptops (works perfectly with either a mouse or a trackpad).**
+
+<img src="./public/images/controls.png" alt="Game Controls Schema" width="600">
+
 - Movement: ZQSD or WASD
 - Shoot: Space
 - Dash: Shift
 - Pause: Esc
 
 ## Objective
+
 Eliminate as many zombies as possible to get the highest score and collect coins to buy upgrades.
+
+## Gameplay & Intelligence
+
+You might notice that the enemies in this game behave in clever, reactive ways, that’s the "Game AI" working behind the scenes.
+We use these techniques as a tool to make the gameplay lively and fun. Here is how we leverage system logic to fit our AI theme. :
+* **Behavioral FSM:** Enemies operate with state-based logic, switching seamlessly between patrolling, pursuing, and attacking based on your current position.
+* **The 'Game Director':** The game doesn't just spawn enemies randomly. It tracks your wave count and score to dynamically scale the difficulty and introduce tougher enemy types (like Bosses, Kamikazes or Spitters) as you progress.
+* **Tactical Combat:** Every enemy type has a specific personality. 'Spitters' (projectile zombies) are programmed to maintain distance, 'Kamikazes' use "rush-down" logic to close the gap, and some enemies even perform **dynamic evasive maneuvers** to dodge incoming fire, making them harder to hit.
+* **Navigation & Obstacle Avoidance:** Enemies don't just walk blindly into walls; they use real-time checks to navigate around obstacles and maintain their orientation toward their targets.
+* **Autonomous Ally:** The allied tank isn't just a static object. It features its own target-prioritization logic to actively help you survive in the heat of battle.
+
+
+---

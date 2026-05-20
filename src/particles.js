@@ -1,6 +1,6 @@
-// src/particles.js
 import * as BABYLON from "@babylonjs/core";
 
+// Creates a one-shot explosion effect at a specific position
 export function createExplosion(scene, position) {
     const particleSystem = new BABYLON.ParticleSystem("particles", 200, scene);
     particleSystem.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
@@ -19,12 +19,14 @@ export function createExplosion(scene, position) {
     particleSystem.updateSpeed = 0.02;
     particleSystem.start();
     
+    // Auto-cleanup: stop and dispose of particles to free memory
     setTimeout(() => {
         particleSystem.stop();
         setTimeout(() => { particleSystem.dispose(); }, 1000);
     }, 500);
 }
 
+// Creates a particle effect attached to the tank for the dash ability
 export function createDashParticles(scene, tank) {
     const particleSystem = new BABYLON.ParticleSystem("dashParticles", 500, scene);
     particleSystem.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
@@ -43,5 +45,5 @@ export function createDashParticles(scene, tank) {
     particleSystem.updateSpeed = 0.01;
     particleSystem.start();
     
-    return particleSystem;
+    return particleSystem; // Returned to allow external stopping logic
 }

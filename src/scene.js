@@ -1,4 +1,3 @@
-// src/scene.js
 import * as BABYLON from "@babylonjs/core";
 import "@babylonjs/loaders";
 
@@ -7,7 +6,9 @@ import { AudioManager } from "./audioManager.js";
 import { createEnvironment, createObstacles } from "./environment.js";
 import { createExplosion, createDashParticles } from "./particles.js";
 import { createUI } from "./ui.js";
+import { createAlly } from "./ally.js";
 
+// Main scene orchestrator: handles game initialization, logic, and rendering
 export function createScene(engine, canvas) {
     const scene = new BABYLON.Scene(engine);
     const audioManager = new AudioManager(scene);
@@ -18,6 +19,7 @@ export function createScene(engine, canvas) {
         return new BABYLON.Vector3((Math.random() * 80) - 40, 0, (Math.random() * 80) - 40);
     }
 
+    // Setup player tank model and physics box
     const tank = BABYLON.MeshBuilder.CreateBox("tank", { width: 2, height: 1.5, depth: 3 }, scene);
     tank.position.y = 0.75;
     tank.isVisible = false; 
@@ -32,6 +34,7 @@ export function createScene(engine, canvas) {
         meshes.forEach(m => shadowGenerator.addShadowCaster(m, true));
     });
 
+    // Create dust trail effect behind the tank
     const dustParticles = new BABYLON.ParticleSystem("dust", 200, scene);
     dustParticles.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/cloud.png", scene);
     dustParticles.emitter = tank; 
@@ -48,6 +51,7 @@ export function createScene(engine, canvas) {
     dustParticles.gravity = new BABYLON.Vector3(0, -2, 0);
     dustParticles.start();
 
+    // Define UI menu button behaviors
     const uiCallbacks = {
         onPlay: () => {
             GameState.isGameStarted = true;
@@ -55,6 +59,12 @@ export function createScene(engine, canvas) {
             ui.hudContainer.isVisible = true;
             audioManager.setupAudioContextUnlock();
             audioManager.playSound("backgroundMusic");
+            if (GameState.isTesterMode) {
+                GameState.coinsCount = 100;
+                GameState.unlockedAmmo = { base: true, smg: true, missile: true, heavy: true };
+                ui.coinsText.text = "COINS: 100";
+                ui.updateAmmoUI();
+            }
         },
         onPauseToggle: () => {
             if (GameState.isGameOver) return; 
@@ -97,12 +107,30 @@ export function createScene(engine, canvas) {
     const bullets = [];
     const enemyBullets = [];
     let dashParticles = null;
+    let bonusSpawnTimer = 0;
+    let allyTank = null;
 
-    function fireBullet() {
+    // Helper for explosive area-of-effect weapon damage
+    function applyAoEDamage(pos, radius, damage) {
+        enemies.forEach((en, index) => {
+            if (BABYLON.Vector3.Distance(pos, en.position) <= radius) {
+                en.hp -= damage;
+                if (en.hp <= 0) {
+                    killEnemy(index, en);
+                } else {
+                    ui.showFloatingText("HIT!", en.position.clone());
+                    en.getChildMeshes().forEach(m => { if (m.material) { const orig = m.material.emissiveColor ? m.material.emissiveColor.clone() : new BABYLON.Color3(0,0,0); m.material.emissiveColor = new BABYLON.Color3(1, 0, 0); setTimeout(() => { if (m.material) m.material.emissiveColor = orig; }, 150); } });
+                }
+            }
+        });
+    }
+
+    // Bullet physics and effect creator
+    function spawnBulletHelper(pos, rot, ammoType) {
         let b;
         let mat = new BABYLON.StandardMaterial("bulletMat", scene);
         
-        if (GameState.currentAmmo === 'smg') {
+        if (ammoType === 'smg') {
             b = BABYLON.MeshBuilder.CreateBox("bullet", {width: 0.1, height: 0.1, depth: 1.0}, scene);
             mat.emissiveColor = new BABYLON.Color3(1, 1, 0); 
             const trail = new BABYLON.ParticleSystem("trail", 50, scene);
@@ -112,7 +140,8 @@ export function createScene(engine, canvas) {
             trail.createPointEmitter(new BABYLON.Vector3(0, 0, -1), new BABYLON.Vector3(0, 0, -1));
             trail.minEmitPower = 1; trail.maxEmitPower = 2; trail.updateSpeed = 0.02; trail.start();
             b.trail = trail;
-        } else if (GameState.currentAmmo === 'missile') {
+            b.velocity = new BABYLON.Vector3(Math.sin(rot), 0, Math.cos(rot)).scale(40);
+        } else if (ammoType === 'missile') {
             b = BABYLON.MeshBuilder.CreateCylinder("bullet", {diameter: 0.2, height: 1.5}, scene);
             mat.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8); mat.specularColor = new BABYLON.Color3(1, 1, 1); 
             const trail = new BABYLON.ParticleSystem("trail", 200, scene);
@@ -122,7 +151,9 @@ export function createScene(engine, canvas) {
             trail.createPointEmitter(new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(0, -1, 0));
             trail.minEmitPower = 2; trail.maxEmitPower = 5; trail.updateSpeed = 0.02; trail.start();
             b.trail = trail;
-        } else if (GameState.currentAmmo === 'heavy') {
+            b.velocity = new BABYLON.Vector3(Math.sin(rot), 0.5, Math.cos(rot)).scale(20);
+            b.gravity = -15;
+        } else if (ammoType === 'heavy') {
             b = BABYLON.MeshBuilder.CreateSphere("bullet", {diameter: 1.0}, scene);
             mat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2); mat.specularColor = new BABYLON.Color3(0.8, 0.8, 0.8);
             const trail = new BABYLON.ParticleSystem("trail", 100, scene);
@@ -131,26 +162,47 @@ export function createScene(engine, canvas) {
             trail.minSize = 0.5; trail.maxSize = 1.2; trail.minLifeTime = 0.3; trail.maxLifeTime = 0.8; trail.emitRate = 100;
             trail.createSphereEmitter(0.5); trail.minEmitPower = 0; trail.maxEmitPower = 0.5; trail.updateSpeed = 0.02; trail.start();
             b.trail = trail;
+            b.velocity = new BABYLON.Vector3(Math.sin(rot), 0, Math.cos(rot)).scale(30);
         } else {
             b = BABYLON.MeshBuilder.CreateSphere("bullet", {diameter: 0.5}, scene);
             mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); mat.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3); mat.emissiveColor = new BABYLON.Color3(0, 0, 0); 
+            b.velocity = new BABYLON.Vector3(Math.sin(rot), 0, Math.cos(rot)).scale(40);
         }
 
-        b.position = tank.position.clone(); b.position.y += 1;
-        b.direction = new BABYLON.Vector3(Math.sin(tank.rotation.y), 0, Math.cos(tank.rotation.y));
-        if (GameState.currentAmmo === 'missile') b.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(tank.rotation.y, Math.PI / 2, 0);
-        else b.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(tank.rotation.y, 0, 0);
-        b.material = mat; b.ammoType = GameState.currentAmmo; bullets.push(b);
-        audioManager.playSound(GameState.currentAmmo === 'smg' ? "smgShoot" : "shoot");
+        b.position = pos.clone(); b.position.y += 1;
+        b.rotationQuaternion = ammoType === 'missile' ? BABYLON.Quaternion.RotationYawPitchRoll(rot, Math.PI / 2, 0) : BABYLON.Quaternion.RotationYawPitchRoll(rot, 0, 0);
+        b.material = mat; b.ammoType = ammoType; bullets.push(b);
+        audioManager.playSound(ammoType === 'smg' ? "smgShoot" : "shoot");
     }
+
+    function fireBullet() { spawnBulletHelper(tank.position, tank.rotation.y, GameState.currentAmmo); }
 
     function fireEnemyBullet(enemy) {
         const bullet = BABYLON.MeshBuilder.CreateSphere("acid", { diameter: 0.6 }, scene);
         bullet.position = enemy.position.clone(); bullet.position.y += 1.5; 
         bullet.direction = tank.position.subtract(bullet.position).normalize();
+        
         const mat = new BABYLON.StandardMaterial("acidMat", scene);
-        mat.emissiveColor = new BABYLON.Color3(0, 1, 0); mat.diffuseColor = new BABYLON.Color3(0, 0.8, 0);
-        bullet.material = mat; enemyBullets.push(bullet);
+        mat.emissiveColor = new BABYLON.Color3(0.2, 1.0, 0.2); 
+        mat.diffuseColor = new BABYLON.Color3(0.1, 0.8, 0.1);
+        mat.alpha = 0.8;
+        bullet.material = mat; 
+        
+        const trail = new BABYLON.ParticleSystem("acidTrail", 100, scene);
+        trail.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
+        trail.emitter = bullet;
+        trail.color1 = new BABYLON.Color4(0.2, 1.0, 0.2, 0.8);
+        trail.color2 = new BABYLON.Color4(0.8, 1.0, 0.2, 0.4);
+        trail.colorDead = new BABYLON.Color4(0, 0, 0, 0.0);
+        trail.minSize = 0.2; trail.maxSize = 0.5;
+        trail.minLifeTime = 0.2; trail.maxLifeTime = 0.5;
+        trail.emitRate = 150;
+        trail.createSphereEmitter(0.3);
+        trail.updateSpeed = 0.02;
+        trail.start();
+        bullet.trail = trail;
+
+        enemyBullets.push(bullet);
     }
 
     let coinContainer = null;
@@ -191,9 +243,8 @@ export function createScene(engine, canvas) {
         scene.registerBeforeRender(() => { if (!GameState.isPaused) { box.rotation.y += 0.05; box.rotation.x += 0.05; }});
         powerUps.push(box);
     };
-    setInterval(spawnPowerUp, 15000);
 
-    const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 3, 15, tank, scene);
+    const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 15, tank, scene);
     camera.attachControl(canvas, true);
     camera.lowerRadiusLimit = 5;  
     camera.upperRadiusLimit = 30; 
@@ -203,22 +254,24 @@ export function createScene(engine, canvas) {
     let cameraShakeIntensity = 0;
     let originalCameraRadius = camera.radius;
 
+    // Use event.code for cross-layout keyboard compatibility (AZERTY/QWERTY)
     const inputMap = {};
     scene.onKeyboardObservable.add((kb) => {
-        const key = kb.event.key.toLowerCase();
+        const code = kb.event.code;
         if (kb.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
-            inputMap[key] = true;
-            if (kb.event.key === "Escape" && GameState.isGameStarted && !GameState.isGameOver) {
+            inputMap[code] = true;
+            if (code === "Escape" && GameState.isGameStarted && !GameState.isGameOver) {
                 uiCallbacks.onPauseToggle();
             }
-            if (key === "1" && GameState.unlockedAmmo.base) { GameState.currentAmmo = 'base'; ui.updateAmmoUI(); }
-            if (key === "2" && GameState.unlockedAmmo.smg) { GameState.currentAmmo = 'smg'; ui.updateAmmoUI(); }
-            if (key === "3" && GameState.unlockedAmmo.missile) { GameState.currentAmmo = 'missile'; ui.updateAmmoUI(); }
-            if (key === "4" && GameState.unlockedAmmo.heavy) { GameState.currentAmmo = 'heavy'; ui.updateAmmoUI(); }
+            if (code === "Digit1" && GameState.unlockedAmmo.base) { GameState.currentAmmo = 'base'; ui.updateAmmoUI(); }
+            if (code === "Digit2" && GameState.unlockedAmmo.smg) { GameState.currentAmmo = 'smg'; ui.updateAmmoUI(); }
+            if (code === "Digit3" && GameState.unlockedAmmo.missile) { GameState.currentAmmo = 'missile'; ui.updateAmmoUI(); }
+            if (code === "Digit4" && GameState.unlockedAmmo.heavy) { GameState.currentAmmo = 'heavy'; ui.updateAmmoUI(); }
         }
-        if (kb.type === BABYLON.KeyboardEventTypes.KEYUP) inputMap[key] = false;
+        if (kb.type === BABYLON.KeyboardEventTypes.KEYUP) inputMap[code] = false;
     });
 
+    // Enemy AI initialization
     const enemies = [];
     let zombieContainer = null, baseRunAnim = null, baseAttackAnim = null, loadedCount = 0;
     
@@ -240,6 +293,7 @@ export function createScene(engine, canvas) {
 
     function checkAllLoaded() { loadedCount++; if (loadedCount === 2) for (let i = 0; i < 8; i++) spawnEnemy(); }
 
+    // Spawn logic with difficulty scaling (Game Director pattern)
     function spawnEnemy(forcedType) {
         if (!zombieContainer) return;
         let type = 'rusher', hp = 1, scale = 1.5, attackDist = 2.3; 
@@ -249,7 +303,7 @@ export function createScene(engine, canvas) {
         let probKamikaze = GameState.currentWave >= 7 ? Math.min(0.2, 0.15 + (GameState.currentWave - 7) * 0.01) : 0;
 
         if (forcedType === 'charger' || roll < probBoss) { type = 'charger'; hp = 3 + Math.max(0, Math.floor((GameState.currentWave - 5) / 2)); scale = 2.2; } 
-        else if (GameState.currentWave >= 5 && roll > 0.8) { type = 'spitter'; hp = 1; scale = 1.3; attackDist = 15.0; } 
+        else if (GameState.currentWave >= 5 && roll > 0.7) { type = 'spitter'; hp = 1; scale = 1.3; attackDist = 15.0; } 
         else if (GameState.currentWave >= 7 && roll >= (0.8 - probKamikaze) && roll <= 0.8) { type = 'kamikaze'; hp = 1; scale = 1.2; attackDist = 3.0; } 
         else if (GameState.currentWave >= 3 && roll >= 0.2 && roll < 0.45) { type = 'flanker'; }
 
@@ -325,19 +379,25 @@ export function createScene(engine, canvas) {
         GameState.globalZombieSoundCooldown = 0;
         
         if (dashParticles) { dashParticles.dispose(); dashParticles = null; }
+        if (allyTank) { allyTank.dispose(); allyTank = null; } 
+        GameState.unlockedAlly = false;
+        if (ui.allyBtn) { ui.allyBtn.textBlock.text = "BUY ALLY TANK (100 coins)"; ui.allyBtn.background = "blue"; }
         audioManager.stopAll();
 
         for (let i = enemies.length - 1; i >= 0; i--) { enemies[i].hitbox.dispose(); if (enemies[i].runAnim) enemies[i].runAnim.dispose(); if (enemies[i].attackAnim) enemies[i].attackAnim.dispose(); enemies[i].dispose(); } enemies.length = 0; 
         for (let i = bullets.length - 1; i >= 0; i--) { if(bullets[i].trail) bullets[i].trail.dispose(); bullets[i].dispose(); } bullets.length = 0;
-        for (let i = enemyBullets.length - 1; i >= 0; i--) enemyBullets[i].dispose(); enemyBullets.length = 0;
-        for (let i = powerUps.length - 1; i >= 0; i--) powerUps[i].dispose(); powerUps.length = 0;
+        for (let i = enemyBullets.length - 1; i >= 0; i--) { if(enemyBullets[i].trail) { enemyBullets[i].trail.dispose(); } enemyBullets[i].dispose(); } enemyBullets.length = 0;
+        for (let i = powerUps.length - 1; i >= 0; i--) { powerUps[i].dispose(); } powerUps.length = 0;
         for (let i = activeCoins.length - 1; i >= 0; i--) { activeCoins[i].mesh.dispose(); activeCoins[i].hitbox.dispose(); } activeCoins.length = 0;
         if (loadedCount === 2) for(let i=0; i<8; i++) spawnEnemy();
     };
 
     let shootCooldown = 0;
 
+    // Main game loop: update movement, input, AI, collisions, and state
     scene.onBeforeRenderObservable.add(() => {
+        const dt = engine.getDeltaTime() / 1000;
+
         if (!GameState.isGameStarted || GameState.isPaused || GameState.isGameOver) { 
             audioManager.stopSound("tankEngine"); 
             audioManager.stopSound("tankIdle"); 
@@ -345,13 +405,41 @@ export function createScene(engine, canvas) {
             if (GameState.isGameOver) audioManager.stopSound("backgroundMusic");
             return; 
         }
-        const dt = engine.getDeltaTime() / 1000;
+
+        if (GameState.unlockedAlly && !allyTank) {
+            allyTank = createAlly(scene, new BABYLON.Vector3(5, 0, 5), ui.advancedTexture, (pos, rot) => spawnBulletHelper(pos, rot, GameState.currentAmmo));
+        }
+
+        if (allyTank) {
+            if (allyTank.isAlive) {
+                allyTank.update(enemies, dt, scene);
+            } else {
+                let pos = allyTank.mesh.position.clone();
+                allyTank.dispose();
+                allyTank = null;
+                GameState.unlockedAlly = false;
+                createExplosion(scene, pos);
+                audioManager.playSound("explosion");
+                if (ui.allyBtn) {
+                    ui.allyBtn.textBlock.text = "BUY ALLY TANK (100 coins)";
+                    ui.allyBtn.background = "blue";
+                }
+            }
+        }
+
+        bonusSpawnTimer += dt;
+        if (bonusSpawnTimer >= 15) {
+            spawnPowerUp();
+            bonusSpawnTimer = 0;
+        }
+
         let newWave = Math.floor(GameState.score / 50) + 1;
         if (newWave > GameState.currentWave) { GameState.currentWave = newWave; ui.waveText.text = "WAVE: " + GameState.currentWave; ui.showWave(GameState.currentWave); }
         let zombieSpeedMax = Math.min(9, 3.5 + (GameState.currentWave * 0.5));
         if (cameraShakeIntensity > 0) { camera.radius = originalCameraRadius + (Math.random() - 0.5) * cameraShakeIntensity * 2; cameraShakeIntensity -= dt * 3; } else camera.radius = originalCameraRadius;
 
-        if (inputMap["shift"] && GameState.dashCooldown <= 0 && !GameState.dashActive) {
+        // Player Dash (Shift)
+        if ((inputMap["ShiftLeft"] || inputMap["ShiftRight"]) && GameState.dashCooldown <= 0 && !GameState.dashActive) {
             GameState.dashActive = true; GameState.dashTimer = Constants.DASH_DURATION; GameState.dashCooldown = Constants.DASH_COOLDOWN;
             dashParticles = createDashParticles(scene, tank); ui.dashText.text = "DASH!"; ui.dashText.color = "Yellow"; GameState.tankVelocity = GameState.speedBoostActive ? 40 : 25; 
         }
@@ -365,12 +453,13 @@ export function createScene(engine, canvas) {
             if (GameState.dashCooldown <= 0) { ui.dashText.text = "DASH: READY"; ui.dashText.color = "Cyan"; }
         }
 
+        // Movement logic
         let maxSpeed = GameState.speedBoostActive ? 16 : 8; if (GameState.dashActive) maxSpeed = GameState.speedBoostActive ? 40 : 25; 
-        if (inputMap["q"] || inputMap["a"]) GameState.tankTurnVelocity -= Constants.TURN_ACCEL * dt; else if (inputMap["d"]) GameState.tankTurnVelocity += Constants.TURN_ACCEL * dt;
+        if (inputMap["KeyQ"] || inputMap["KeyA"]) GameState.tankTurnVelocity -= Constants.TURN_ACCEL * dt; else if (inputMap["KeyD"]) GameState.tankTurnVelocity += Constants.TURN_ACCEL * dt;
         else { if (GameState.tankTurnVelocity > 0) { GameState.tankTurnVelocity -= Constants.TURN_FRICTION * dt; if (GameState.tankTurnVelocity < 0) GameState.tankTurnVelocity = 0; } if (GameState.tankTurnVelocity < 0) { GameState.tankTurnVelocity += Constants.TURN_FRICTION * dt; if (GameState.tankTurnVelocity > 0) GameState.tankTurnVelocity = 0; } }
         if (GameState.tankTurnVelocity > Constants.MAX_TURN) GameState.tankTurnVelocity = Constants.MAX_TURN; if (GameState.tankTurnVelocity < -Constants.MAX_TURN) GameState.tankTurnVelocity = -Constants.MAX_TURN;
         
-        if (inputMap["z"] || inputMap["w"]) GameState.tankVelocity += Constants.ACCELERATION * dt; else if (inputMap["s"]) GameState.tankVelocity -= Constants.ACCELERATION * dt;
+        if (inputMap["KeyZ"] || inputMap["KeyW"]) GameState.tankVelocity += Constants.ACCELERATION * dt; else if (inputMap["KeyS"]) GameState.tankVelocity -= Constants.ACCELERATION * dt;
         else { if (GameState.tankVelocity > 0) { GameState.tankVelocity -= Constants.FRICTION * dt; if (GameState.tankVelocity < 0) GameState.tankVelocity = 0; } if (GameState.tankVelocity < 0) { GameState.tankVelocity += Constants.FRICTION * dt; if (GameState.tankVelocity > 0) GameState.tankVelocity = 0; } }
         if (GameState.tankVelocity > maxSpeed) GameState.tankVelocity = maxSpeed; if (GameState.tankVelocity < -maxSpeed * 0.8) GameState.tankVelocity = -maxSpeed * 0.8; 
 
@@ -385,6 +474,7 @@ export function createScene(engine, canvas) {
             while (diff > Math.PI) diff -= Math.PI * 2; while (diff < -Math.PI) diff += Math.PI * 2; camera.alpha += diff * 0.05;
         }
 
+        // Collision logic for obstacles
         const triggerBarrelExplosion = (barrel) => {
             audioManager.playSound("explosion"); createExplosion(scene, barrel.position.clone());
             if (BABYLON.Vector3.Distance(barrel.position, tank.position) <= 5.0) {
@@ -403,9 +493,11 @@ export function createScene(engine, canvas) {
         tank.position.z += GameState.tankVelocity * Math.cos(tank.rotation.y) * dt;
         for (let obstacle of obstacles) { if (tank.intersectsMesh(obstacle, true)) { if (barrels.includes(obstacle)) triggerBarrelExplosion(obstacle); else { tank.position.z = oldZ; GameState.tankVelocity *= 0.9; } break; } }
 
+        // Shooting logic (Spacebar)
         shootCooldown -= dt; let limit = GameState.rapidFireActive ? 0.05 : (GameState.currentAmmo === 'smg' ? 0.1 : (GameState.currentAmmo === 'missile' ? 0.6 : (GameState.currentAmmo === 'heavy' ? 1.0 : 0.3)));
-        if (inputMap[" "] && shootCooldown <= 0) { fireBullet(); shootCooldown = limit; }
+        if (inputMap["Space"] && shootCooldown <= 0) { fireBullet(); shootCooldown = limit; }
 
+        // Coin collection and lifecycle
         for (let i = activeCoins.length - 1; i >= 0; i--) {
             const c = activeCoins[i]; c.lifespan -= dt;
             if (c.lifespan <= 0) { c.hitbox.dispose(); c.mesh.dispose(); activeCoins.splice(i, 1); continue; }
@@ -413,42 +505,60 @@ export function createScene(engine, canvas) {
             if (c.hitbox.intersectsMesh(tank, false)) { GameState.coinsCount++; ui.coinsText.text = "COINS: " + GameState.coinsCount; audioManager.playSound("getCoin"); c.hitbox.dispose(); c.mesh.dispose(); activeCoins.splice(i, 1); }
         }
 
+        // Projectile collision management
         for (let i = bullets.length - 1; i >= 0; i--) {
-            const b = bullets[i]; b.position.addInPlace(b.direction.scale(40 * dt)); 
-            if (b.position.length() > 150) { if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); } b.dispose(); bullets.splice(i, 1); }
+            const b = bullets[i];
+            if (b.ammoType === 'missile') {
+                b.velocity.y += b.gravity * dt;
+                b.position.addInPlace(b.velocity.scale(dt));
+                b.lookAt(b.position.add(b.velocity));
+                if (b.position.y <= 0) {
+                    createExplosion(scene, b.position.clone());
+                    audioManager.playSound("explosion");
+                    applyAoEDamage(b.position, 8, 2);
+                    if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); }
+                    b.dispose(); bullets.splice(i, 1); continue;
+                }
+            } else {
+                b.position.addInPlace(b.velocity.scale(dt));
+            }
+
+            if (b.position.length() > 150 || (b.ammoType !== 'missile' && b.position.y < -10)) { if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); } b.dispose(); bullets.splice(i, 1); }
             else {
                 let hitDecor = false;
                 for (let k = barrels.length - 1; k >= 0; k--) {
                     const barrel = barrels[k];
                     if (b.intersectsMesh(barrel, false)) { 
                         triggerBarrelExplosion(barrel); 
-                        if (b.ammoType === 'missile' || b.ammoType === 'heavy') { createExplosion(scene, b.position.clone()); audioManager.playSound("explosion"); }
+                        if (b.ammoType === 'missile' || b.ammoType === 'heavy') { createExplosion(scene, b.position.clone()); audioManager.playSound("explosion"); applyAoEDamage(b.position, 8, 2); }
                         if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); } b.dispose(); bullets.splice(i, 1); hitDecor = true; break; 
                     }
                 }
                 if (hitDecor) continue;
                 for (let obs of obstacles) {
                     if (!barrels.includes(obs) && b.intersectsMesh(obs, false)) {
-                        createExplosion(scene, b.position.clone()); if (b.ammoType === 'missile' || b.ammoType === 'heavy') audioManager.playSound("explosion");
+                        createExplosion(scene, b.position.clone()); if (b.ammoType === 'missile' || b.ammoType === 'heavy') { audioManager.playSound("explosion"); applyAoEDamage(b.position, 8, 2); }
                         if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); } b.dispose(); bullets.splice(i, 1); hitDecor = true; break;
                     }
                 }
             }
         }
 
+        // Enemy projectile tracking
         for (let i = enemyBullets.length - 1; i >= 0; i--) {
             const b = enemyBullets[i]; b.position.addInPlace(b.direction.scale(15 * dt)); 
-            if (b.position.length() > 150) { b.dispose(); enemyBullets.splice(i, 1); }
+            if (b.position.length() > 150) { if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); } b.dispose(); enemyBullets.splice(i, 1); }
             else {
                 if (b.intersectsMesh(tank, false)) {
                     GameState.lives -= 1; ui.livesText.text = "LIVES: " + Math.max(0, GameState.lives);
-                    if (GameState.lives === 2) ui.livesText.color = "orange"; else if (GameState.lives <= 1) ui.livesText.color = "red"; triggerDamageEffect(); createExplosion(scene, b.position.clone()); b.dispose(); enemyBullets.splice(i, 1);
+                    if (GameState.lives === 2) ui.livesText.color = "orange"; else if (GameState.lives <= 1) ui.livesText.color = "red"; triggerDamageEffect(); createExplosion(scene, b.position.clone()); if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); } b.dispose(); enemyBullets.splice(i, 1);
                     if (GameState.lives <= 0) { GameState.isGameOver = true; ui.gameOverMenu.isVisible = true; audioManager.playSound("gameOver"); audioManager.stopSound("backgroundMusic"); } continue;
                 }
-                for (let obs of obstacles) { if (b.intersectsMesh(obs, false)) { createExplosion(scene, b.position.clone()); b.dispose(); enemyBullets.splice(i, 1); break; } }
+                for (let obs of obstacles) { if (b.intersectsMesh(obs, false)) { createExplosion(scene, b.position.clone()); if(b.trail) { b.trail.stop(); setTimeout(()=>b.trail.dispose(), 500); } b.dispose(); enemyBullets.splice(i, 1); break; } }
             }
         }
 
+        // Bonus pickup effects
         for (let i = powerUps.length - 1; i >= 0; i--) {
             const p = powerUps[i]; if (p.position.y > 1) p.position.y -= 5 * dt;
             if (p.intersectsMesh(tank, false)) {
@@ -466,32 +576,41 @@ export function createScene(engine, canvas) {
 
         if (GameState.globalZombieSoundCooldown > 0) GameState.globalZombieSoundCooldown -= dt;
 
+        // Enemy AI Logic: Patrolling and Target Pursuit (Finite State Machine)
         for (let i = enemies.length - 1; i >= 0; i--) {
             const enemy = enemies[i];
             if (!GameState.enemiesFrozen) {
                 if (GameState.globalZombieSoundCooldown <= 0 && Math.random() < 0.005) { GameState.globalZombieSoundCooldown = 3.0 + Math.random() * 10.0; audioManager.playSound("zombieSound", enemy.hitbox); }
 
-                let distanceToTank = BABYLON.Vector3.Distance(new BABYLON.Vector3(enemy.position.x, 0, enemy.position.z), new BABYLON.Vector3(tank.position.x, 0, tank.position.z));
+                let distToTank = BABYLON.Vector3.Distance(enemy.position, tank.position);
+                let distToAlly = (allyTank && allyTank.isAlive) ? BABYLON.Vector3.Distance(enemy.position, allyTank.mesh.position) : 999;
+                let target = (allyTank && allyTank.isAlive && distToAlly < distToTank) ? allyTank.mesh : tank;
+                let distanceToTarget = (target === tank) ? distToTank : distToAlly;
+
                 enemy.stateTimer += dt;
                 
                 switch (enemy.aiState) {
-                    case EnemyState.PATROL: if (distanceToTank < 25 || enemy.enemyType === 'charger' || enemy.enemyType === 'kamikaze') { enemy.aiState = EnemyState.CHASE; enemy.stateTimer = 0; } break;
-                    case EnemyState.CHASE: if (distanceToTank > 35 && enemy.enemyType !== 'charger' && enemy.enemyType !== 'kamikaze') { enemy.aiState = EnemyState.PATROL; enemy.patrolTarget = getRandomPatrolTarget(); enemy.stateTimer = 0; } break;
+                    case EnemyState.PATROL: if (distanceToTarget < 25 || enemy.enemyType === 'charger' || enemy.enemyType === 'kamikaze') { enemy.aiState = EnemyState.CHASE; enemy.stateTimer = 0; } break;
+                    case EnemyState.CHASE: if (distanceToTarget > 35 && enemy.enemyType !== 'charger' && enemy.enemyType !== 'kamikaze') { enemy.aiState = EnemyState.PATROL; enemy.patrolTarget = getRandomPatrolTarget(); enemy.stateTimer = 0; } break;
                 }
 
                 let fsmDir = new BABYLON.Vector3(0, 0, 0), currentSpeed = zombieSpeedMax;
                 if (enemy.aiState === EnemyState.PATROL) {
                     let toTarget = enemy.patrolTarget.subtract(enemy.position); toTarget.y = 0; if (toTarget.length() < 2) enemy.patrolTarget = getRandomPatrolTarget();
                     fsmDir = toTarget.normalize(); currentSpeed = zombieSpeedMax * 0.4; 
-                } else fsmDir = tank.position.subtract(enemy.position).normalize();
+                } else fsmDir = target.position.subtract(enemy.position).normalize();
                 if (enemy.enemyType === 'kamikaze') currentSpeed = zombieSpeedMax * 1.5; 
 
                 const attackDist = enemy.attackDist || 2.3; 
-                if (distanceToTank <= attackDist) {
+                if (distanceToTarget <= attackDist) {
                     if (enemy.enemyType === 'kamikaze') {
                         createExplosion(scene, enemy.position.clone()); audioManager.playSound("explosion");
-                        GameState.lives -= 1; ui.livesText.text = "LIVES: " + Math.max(0, GameState.lives);
-                        if (GameState.lives === 2) ui.livesText.color = "orange"; else if (GameState.lives <= 1) ui.livesText.color = "red"; triggerDamageEffect();
+                        if (target === tank) {
+                            GameState.lives -= 1; ui.livesText.text = "LIVES: " + Math.max(0, GameState.lives);
+                            if (GameState.lives === 2) ui.livesText.color = "orange"; else if (GameState.lives <= 1) ui.livesText.color = "red"; triggerDamageEffect();
+                        } else {
+                            allyTank.takeDamage(10);
+                        }
                         enemy.hitbox.dispose(); if (enemy.runAnim) enemy.runAnim.dispose(); if (enemy.attackAnim) enemy.attackAnim.dispose(); enemy.dispose(); enemies.splice(i, 1); spawnEnemy();
                         if (GameState.lives <= 0) { GameState.isGameOver = true; ui.gameOverMenu.isVisible = true; audioManager.playSound("gameOver"); audioManager.stopSound("backgroundMusic"); } continue; 
                     }
@@ -500,9 +619,13 @@ export function createScene(engine, canvas) {
                     enemy.attackTimer -= dt;
                     if (enemy.attackTimer <= 0) {
                         if (enemy.enemyType === 'spitter') { fireEnemyBullet(enemy); enemy.attackTimer = 2.5; } else {
-                            GameState.lives -= 1; ui.livesText.text = "LIVES: " + Math.max(0, GameState.lives);
-                            if (GameState.lives === 2) ui.livesText.color = "orange"; else if (GameState.lives <= 1) ui.livesText.color = "red"; triggerDamageEffect(); enemy.attackTimer = 1.5; 
-                            if (GameState.lives <= 0) { GameState.isGameOver = true; ui.gameOverMenu.isVisible = true; audioManager.playSound("gameOver"); audioManager.stopSound("backgroundMusic"); return; }
+                            if (target === tank) {
+                                GameState.lives -= 1; ui.livesText.text = "LIVES: " + Math.max(0, GameState.lives);
+                                if (GameState.lives === 2) ui.livesText.color = "orange"; else if (GameState.lives <= 1) ui.livesText.color = "red"; triggerDamageEffect(); enemy.attackTimer = 1.5; 
+                                if (GameState.lives <= 0) { GameState.isGameOver = true; ui.gameOverMenu.isVisible = true; audioManager.playSound("gameOver"); audioManager.stopSound("backgroundMusic"); return; }
+                            } else {
+                                allyTank.takeDamage(1); enemy.attackTimer = 1.5;
+                            }
                         }
                     }
                 } else {
@@ -515,7 +638,7 @@ export function createScene(engine, canvas) {
                 for (let obs of obstacles) { if (enemy.hitbox.intersectsMesh(obs, false) && !barrels.includes(obs)) { enemy.position.x = oldEnemyX; enemy.position.z += Math.sign(fsmDir.z || 1) * currentSpeed * dt * 0.5; break; } }
                 enemy.position.z += fsmDir.z * currentSpeed * dt;
                 for (let obs of obstacles) { if (enemy.hitbox.intersectsMesh(obs, false) && !barrels.includes(obs)) { enemy.position.z = oldEnemyZ; enemy.position.x += Math.sign(fsmDir.x || 1) * currentSpeed * dt * 0.5; break; } }
-                enemy.position.y = 0; enemy.lookAt(enemy.aiState === EnemyState.PATROL ? enemy.position.add(fsmDir) : tank.position); 
+                enemy.position.y = 0; enemy.lookAt(enemy.aiState === EnemyState.PATROL ? enemy.position.add(fsmDir) : target.position); 
             }
 
             let enemyDead = false;

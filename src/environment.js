@@ -1,6 +1,6 @@
-// src/environment.js
 import * as BABYLON from "@babylonjs/core";
 
+// Configures global scene lighting, skybox, and ground
 export function createEnvironment(scene) {
     scene.clearColor = new BABYLON.Color3(0.0, 0.0, 0.0); 
     scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
@@ -9,10 +9,12 @@ export function createEnvironment(scene) {
     dirLight.position = new BABYLON.Vector3(20, 40, 20);
     dirLight.intensity = 0.8;
 
+    // Setup shadow generator for realistic environment depth
     const shadowGenerator = new BABYLON.ShadowGenerator(1024, dirLight);
     shadowGenerator.useBlurExponentialShadowMap = true;
     shadowGenerator.blurKernel = 32;
 
+    // Create skybox with equi-rectangular texture
     const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size: 1000.0}, scene);
     const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
     skyboxMaterial.backFaceCulling = false; 
@@ -22,6 +24,7 @@ export function createEnvironment(scene) {
     skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
     skybox.material = skyboxMaterial;
 
+    // Setup ground with tiled texture
     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 150, height: 150 }, scene);
     const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
     groundMat.diffuseTexture = new BABYLON.Texture("/decor/ground.jpg", scene);
@@ -34,10 +37,12 @@ export function createEnvironment(scene) {
     return shadowGenerator;
 }
 
+// Populates the scene with models and invisible collision hitboxes
 export function createObstacles(scene, shadowGenerator) {
     const obstacles = [];
     const barrels = [];
 
+    // Spawn rocks with random variations
     for (let i = 0; i < 8; i++) {
         const rockHitbox = BABYLON.MeshBuilder.CreateSphere("rockHitbox", { 
             diameter: 1.2 + Math.random() * 1.2, segments: 6 
@@ -49,7 +54,7 @@ export function createObstacles(scene, shadowGenerator) {
         rockHitbox.scaling.y = 0.5 + Math.random() * 0.3;
         rockHitbox.scaling.z = 0.8 + Math.random() * 0.4;
         rockHitbox.rotation.y = Math.random() * Math.PI;
-        rockHitbox.isVisible = false; 
+        rockHitbox.isVisible = false; // Hitbox is invisible for physics
         
         BABYLON.SceneLoader.ImportMesh("", "/decor/", "stone.glb", scene, (meshes) => {
             if (rockHitbox.isDisposed()) { meshes.forEach(m => m.dispose()); return; }
@@ -63,6 +68,7 @@ export function createObstacles(scene, shadowGenerator) {
         obstacles.push(rockHitbox);
     }
 
+    // Spawn decorative trees
     for (let i = 0; i < 5; i++) {
         const xPos = (Math.random() * 80) - 40;
         const zPos = (Math.random() * 80) - 40;
@@ -75,6 +81,7 @@ export function createObstacles(scene, shadowGenerator) {
         });
     }
 
+    // Spawn barrels with collision logic
     function spawnBarrels() {
         for (let i = 0; i < 5; i++) {
             const barrelHitbox = BABYLON.MeshBuilder.CreateCylinder("barrelHitbox", { diameter: 1.2, height: 1.5 }, scene);
@@ -97,6 +104,7 @@ export function createObstacles(scene, shadowGenerator) {
     }
     spawnBarrels();
 
+    // Spawn complex building models with precise hitbox matching
     function spawnHouse(x, z, yRotation = 0) {
         BABYLON.SceneLoader.ImportMesh("", "/decor/", "house.glb", scene, (meshes) => {
             const houseModel = meshes[0];
@@ -148,6 +156,7 @@ export function createObstacles(scene, shadowGenerator) {
     }
     spawnDestroyedBus(-10, -30, Math.PI / 2);
 
+    // Populate level boundaries using a loop
     function spawnFence(x, z, yRotation) {
         BABYLON.SceneLoader.ImportMesh("", "/decor/", "fence.glb", scene, (meshes) => {
             const fenceModel = meshes[0];
