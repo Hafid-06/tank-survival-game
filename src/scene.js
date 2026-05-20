@@ -275,8 +275,7 @@ export function createScene(engine, canvas) {
     const enemies = [];
     let zombieContainer = null, baseRunAnim = null, baseAttackAnim = null, loadedCount = 0;
     
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "zombie_run.glb", scene, (container) => {
-        zombieContainer = container; 
+    BABYLON.SceneLoader.LoadAssetContainer("", "models/zombie_run.glb", scene, (container) => {        zombieContainer = container; 
         if (container.animationGroups && container.animationGroups.length > 0) baseRunAnim = container.animationGroups[0];
         checkAllLoaded();
     });
