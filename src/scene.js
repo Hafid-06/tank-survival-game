@@ -24,7 +24,7 @@ export function createScene(engine, canvas) {
     tank.position.y = 0.75;
     tank.isVisible = false; 
 
-    BABYLON.SceneLoader.ImportMesh("", "/models/", "tank.glb", scene, (meshes) => {
+    BABYLON.SceneLoader.ImportMesh("", "models/", "tank.glb", scene, (meshes) => {
         const tankModel = meshes[0];
         tankModel.parent = tank; 
         tankModel.scaling.setAll(0.6); 
