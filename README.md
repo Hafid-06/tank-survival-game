@@ -109,6 +109,7 @@ Collect coins by defeating zombies and spend them in the shop to upgrade your ar
 <img src="./public/images/controls.png" alt="Game Controls Schema" width="600">
 
 - Movement: ZQSD or WASD
+- Camera: Right click + drag OR Arrow keys
 - Shoot: Space
 - Dash: Shift
 - Pause: Esc
