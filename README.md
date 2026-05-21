@@ -67,6 +67,10 @@ As you defeat enemies, you collect coins to buy permanent upgrades and unlock ne
 Keep an eye out for bonuses that appear on the map to help you in the heat of battle! 
 The difficulty increases as you progress, forcing you to stay sharp, manage your resources, and keep moving.
 
+### Theme: IA Edition
+
+We developed this game for the GamesOnWeb "IA Edition" challenge. Our goal was to make AI the heart of the gameplay, rather than just a way to control enemies. We built a "Game Director" that adjusts the challenge in real-time, created zombies that react to your movements using smart logic, and added an autonomous ally tank to fight by your side. 
+
 ### Know Your Enemies
 
 You aren't just fighting one type of zombie. The horde evolves as you survive, introducing new challenges:
@@ -164,3 +168,6 @@ We are really proud of what we've built, and we hope you have as much fun playin
 * **Mobile Adaptation:** Optimizing controls and performance for mobile devices.
 
 ---
+
+## About this project
+Tank Survival was developed within the framework of the GamesOnWeb IA Edition 2025-2026.
