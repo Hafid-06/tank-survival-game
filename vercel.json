@@ -1,7 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/((?!models/|decor/).*)",
+      "source": "/models/:path*",
+      "destination": "/models/:path*"
+    },
+    {
+      "source": "/decor/:path*",
+      "destination": "/decor/:path*"
+    },
+    {
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
