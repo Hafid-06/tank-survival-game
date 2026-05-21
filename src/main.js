@@ -1,14 +1,5 @@
 import * as BABYLON from "@babylonjs/core";
-import { DracoCompression } from "@babylonjs/core";
 import { createScene } from "./scene.js";
-
-DracoCompression.Configuration = {
-    decoder: {
-        wasmUrl: "https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js",
-        wasmBinaryUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.wasm",
-        fallbackUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.js",
-    }
-};
 
 window.addEventListener("DOMContentLoaded", async () => {
     const canvas = document.getElementById("renderCanvas");

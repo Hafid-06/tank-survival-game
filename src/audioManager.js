@@ -65,16 +65,16 @@ export class AudioManager {
             }, { spatialSound: false, ...options });
         };
 
-        createSound("shoot", "/sounds/cannon.mp3", { volume: this.volumes.shoot });
-        createSound("smgShoot", "/sounds/SMG.mp3", { volume: this.volumes.smgShoot });
-        createSound("bonus", "/sounds/bonus.mp3", { volume: this.volumes.bonus });
-        createSound("getCoin", "/sounds/get-coin.mp3", { volume: this.volumes.getCoin });
-        createSound("tankEngine", "/sounds/tank.mp3", { volume: this.volumes.tankEngine, loop: true });
-        createSound("tankIdle", "/sounds/engine.mp3", { volume: this.volumes.tankIdle, loop: true });
-        createSound("explosion", "/sounds/explosion.mp3", { volume: this.volumes.explosion });
-        createSound("gameOver", "/sounds/game_over.mp3", { volume: this.volumes.gameOver });
-        createSound("zombieSound", "/sounds/zombie_sound.mp3", { volume: this.volumes.zombieSound, spatialSound: true, maxDistance: 40 });
-        createSound("backgroundMusic", "/sounds/music.mp3", { volume: this.volumes.backgroundMusic, loop: true });
+        createSound("shoot", "sounds/cannon.mp3", { volume: this.volumes.shoot });
+        createSound("smgShoot", "sounds/SMG.mp3", { volume: this.volumes.smgShoot });
+        createSound("bonus", "sounds/bonus.mp3", { volume: this.volumes.bonus });
+        createSound("getCoin", "sounds/get-coin.mp3", { volume: this.volumes.getCoin });
+        createSound("tankEngine", "sounds/tank.mp3", { volume: this.volumes.tankEngine, loop: true });
+        createSound("tankIdle", "sounds/engine.mp3", { volume: this.volumes.tankIdle, loop: true });
+        createSound("explosion", "sounds/explosion.mp3", { volume: this.volumes.explosion });
+        createSound("gameOver", "sounds/game_over.mp3", { volume: this.volumes.gameOver });
+        createSound("zombieSound", "sounds/zombie_sound.mp3", { volume: this.volumes.zombieSound, spatialSound: true, maxDistance: 40 });
+        createSound("backgroundMusic", "sounds/music.mp3", { volume: this.volumes.backgroundMusic, loop: true });
     }
 
     // Initializes HTML5 audio elements as a robust fallback system
@@ -89,16 +89,16 @@ export class AudioManager {
             this.htmlAudios[name] = { element: el };
         };
 
-        createAudioEl("shoot", '/sounds/cannon.mp3', { volume: this.volumes.shoot });
-        createAudioEl("smgShoot", '/sounds/SMG.mp3', { volume: this.volumes.smgShoot });
-        createAudioEl("bonus", '/sounds/bonus.mp3', { volume: this.volumes.bonus });
-        createAudioEl("getCoin", '/sounds/get-coin.mp3', { volume: this.volumes.getCoin });
-        createAudioEl("tankEngine", '/sounds/tank.mp3', { loop: true, volume: this.volumes.tankEngine });
-        createAudioEl("tankIdle", '/sounds/engine.mp3', { loop: true, volume: this.volumes.tankIdle });
-        createAudioEl("explosion", '/sounds/explosion.mp3', { volume: this.volumes.explosion });
-        createAudioEl("gameOver", '/sounds/game_over.mp3', { volume: this.volumes.gameOver });
-        createAudioEl("zombieSound", '/sounds/zombie_sound.mp3', { volume: this.volumes.zombieSound });
-        createAudioEl("backgroundMusic", '/sounds/music.mp3', { loop: true, volume: this.volumes.backgroundMusic });
+        createAudioEl("shoot", 'sounds/cannon.mp3', { volume: this.volumes.shoot });
+        createAudioEl("smgShoot", 'sounds/SMG.mp3', { volume: this.volumes.smgShoot });
+        createAudioEl("bonus", 'sounds/bonus.mp3', { volume: this.volumes.bonus });
+        createAudioEl("getCoin", 'sounds/get-coin.mp3', { volume: this.volumes.getCoin });
+        createAudioEl("tankEngine", 'sounds/tank.mp3', { loop: true, volume: this.volumes.tankEngine });
+        createAudioEl("tankIdle", 'sounds/engine.mp3', { loop: true, volume: this.volumes.tankIdle });
+        createAudioEl("explosion", 'sounds/explosion.mp3', { volume: this.volumes.explosion });
+        createAudioEl("gameOver", 'sounds/game_over.mp3', { volume: this.volumes.gameOver });
+        createAudioEl("zombieSound", 'sounds/zombie_sound.mp3', { volume: this.volumes.zombieSound });
+        createAudioEl("backgroundMusic", 'sounds/music.mp3', { loop: true, volume: this.volumes.backgroundMusic });
 
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -119,7 +119,7 @@ export class AudioManager {
 
         try {
             const files = ['cannon.mp3', 'SMG.mp3', 'bonus.mp3', 'get-coin.mp3', 'tank.mp3', 'engine.mp3', 'explosion.mp3', 'game_over.mp3', 'zombie_sound.mp3', 'music.mp3'];
-            files.forEach(f => fetch(`/sounds/${f}`, { method: 'HEAD' }).catch(() => {}));
+            files.forEach(f => fetch(`sounds/${f}`, { method: 'HEAD' }).catch(() => {}));
         } catch(e) {}
     }
 

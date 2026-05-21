@@ -3,7 +3,7 @@ import * as BABYLON from "@babylonjs/core";
 // Creates a one-shot explosion effect at a specific position
 export function createExplosion(scene, position) {
     const particleSystem = new BABYLON.ParticleSystem("particles", 200, scene);
-    particleSystem.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
+    particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
     particleSystem.emitter = position; 
     particleSystem.color1 = new BABYLON.Color4(1, 0.5, 0, 1.0);
     particleSystem.color2 = new BABYLON.Color4(1, 0.2, 0, 1.0);
@@ -29,7 +29,7 @@ export function createExplosion(scene, position) {
 // Creates a particle effect attached to the tank for the dash ability
 export function createDashParticles(scene, tank) {
     const particleSystem = new BABYLON.ParticleSystem("dashParticles", 500, scene);
-    particleSystem.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
+    particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
     particleSystem.emitter = tank;
     particleSystem.color1 = new BABYLON.Color4(0, 1, 1, 1.0);
     particleSystem.color2 = new BABYLON.Color4(0, 0.5, 1, 1.0);

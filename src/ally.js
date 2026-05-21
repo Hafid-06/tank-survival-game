@@ -10,7 +10,7 @@ export function createAlly(scene, startPos, advancedTexture, spawnBulletFn) {
 
     // Setup movement dust effect
     const dustParticles = new BABYLON.ParticleSystem("allyDust", 100, scene);
-    dustParticles.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/cloud.png", scene);
+    dustParticles.particleTexture = new BABYLON.Texture("textures/cloud.png", scene);
     dustParticles.emitter = allyContainer;
     dustParticles.minEmitBox = new BABYLON.Vector3(-0.5, 0, -0.5);
     dustParticles.maxEmitBox = new BABYLON.Vector3(0.5, 0, 0.5);
@@ -22,7 +22,7 @@ export function createAlly(scene, startPos, advancedTexture, spawnBulletFn) {
     dustParticles.start();
 
     // Import the 3D model
-    BABYLON.SceneLoader.ImportMesh("", "/models/", "ally.glb", scene, (meshes) => {
+    BABYLON.SceneLoader.ImportMesh("", "models/", "ally.glb", scene, (meshes) => {
         const allyModel = meshes[0];
         allyModel.parent = allyContainer;
         allyModel.rotationQuaternion = null;

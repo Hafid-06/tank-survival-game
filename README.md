@@ -11,10 +11,9 @@ Group members:
 
 ## The game is available at:
 
-```https://tank-survival-game.vercel.app/```
+## [🎮 Play the game](https://hafid-06.itch.io/tank-survival)
 
 ## Gameplay Video
-
 
 
 
@@ -128,5 +127,38 @@ We use these techniques as a tool to make the gameplay lively and fun. Here is h
 * **Navigation & Obstacle Avoidance:** Enemies don't just walk blindly into walls; they use real-time checks to navigate around obstacles and maintain their orientation toward their targets.
 * **Autonomous Ally:** The allied tank isn't just a static object. It features its own target-prioritization logic to actively help you survive in the heat of battle.
 
+
+## Our Challenges
+
+Our Technical and Design Challenges:
+
+* **The "Game Director"**: One of our main challenges was creating a dynamic enemy management system. The "Game Director" doesn't just spawn zombies randomly; it analyzes the wave level, the player's score, and health in real-time to adjust the difficulty. This system allows for the gradual introduction of tactical threats (like Spitters) or brute force enemies (like Kamikazes), ensuring the difficulty progression feels natural and balanced.
+
+* **Hitbox Calibration**: We spent a significant amount of time manually fine-tuning the collision zones for every enemy and decor element. This phase of repetitive testing was crucial to achieving precise gameplay, where every shot and physical interaction perfectly matches the visual model.
+
+* **Ally Behavior**: Developing the autonomous ally's intelligence was complex. It had to act as an intelligent partner capable of prioritizing dangerous targets and navigating the environment without blocking the player's path. This required many iterations of targeting and navigation logic. One of our biggest achievements and sources of pride was making the ally feel truly useful and natural during gameplay, almost like a real teammate helping the player survive.
+
+* **Deployment Optimization**: Hosting the game was a technical trial. Our large 3D models made the game run very slowly on GitHub Pages. When moving to Vercel, we encountered file size limits. We resolved these issues by manually optimizing and compressing our GLB assets, which allowed us to maintain high visual fidelity while ensuring optimal gameplay fluidity for users.
+
+## Tech Stack
+
+* Engine: Babylon.js
+
+* Build Tool: Vite
+
+* Language: JavaScript (ES6+)
+
+* Deployment: itch.io
+
+## Credits
+
+* Enemy models and animations: [Mixamo](https://www.mixamo.com/)
+* Environment assets and decor: [Sketchfab](https://sketchfab.com/)
+* Audio (Sounds and music): [Pixabay](https://pixabay.com/)
+
+## Future Improvements
+
+* **Multiplayer:** Implementing a local or online co-op mode to expand the ally system.
+* **Mobile Adaptation:** Optimizing controls and performance for mobile devices.
 
 ---

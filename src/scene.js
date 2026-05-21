@@ -24,7 +24,7 @@ export function createScene(engine, canvas) {
     tank.position.y = 0.75;
     tank.isVisible = false; 
 
-    BABYLON.SceneLoader.ImportMesh("", "/models/", "tank.glb", scene, (meshes) => {
+    BABYLON.SceneLoader.ImportMesh("", "models/", "tank.glb", scene, (meshes) => {
         const tankModel = meshes[0];
         tankModel.parent = tank; 
         tankModel.scaling.setAll(0.6); 
@@ -36,7 +36,7 @@ export function createScene(engine, canvas) {
 
     // Create dust trail effect behind the tank
     const dustParticles = new BABYLON.ParticleSystem("dust", 200, scene);
-    dustParticles.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/cloud.png", scene);
+    dustParticles.particleTexture = new BABYLON.Texture("textures/cloud.png", scene);
     dustParticles.emitter = tank; 
     dustParticles.minEmitBox = new BABYLON.Vector3(-1, -0.5, -1.5); 
     dustParticles.maxEmitBox = new BABYLON.Vector3(1, -0.5, 1.5);
@@ -134,7 +134,7 @@ export function createScene(engine, canvas) {
             b = BABYLON.MeshBuilder.CreateBox("bullet", {width: 0.1, height: 0.1, depth: 1.0}, scene);
             mat.emissiveColor = new BABYLON.Color3(1, 1, 0); 
             const trail = new BABYLON.ParticleSystem("trail", 50, scene);
-            trail.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
+            trail.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
             trail.emitter = b; trail.color1 = new BABYLON.Color4(1, 0.5, 0, 1.0); trail.color2 = new BABYLON.Color4(1, 0.1, 0, 1.0); trail.colorDead = new BABYLON.Color4(0, 0, 0, 0.0);
             trail.minSize = 0.1; trail.maxSize = 0.3; trail.minLifeTime = 0.1; trail.maxLifeTime = 0.2; trail.emitRate = 200;
             trail.createPointEmitter(new BABYLON.Vector3(0, 0, -1), new BABYLON.Vector3(0, 0, -1));
@@ -145,7 +145,7 @@ export function createScene(engine, canvas) {
             b = BABYLON.MeshBuilder.CreateCylinder("bullet", {diameter: 0.2, height: 1.5}, scene);
             mat.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8); mat.specularColor = new BABYLON.Color3(1, 1, 1); 
             const trail = new BABYLON.ParticleSystem("trail", 200, scene);
-            trail.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
+            trail.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
             trail.emitter = b; trail.color1 = new BABYLON.Color4(1, 0.5, 0, 1.0); trail.color2 = new BABYLON.Color4(0.2, 0.2, 0.2, 0.8); trail.colorDead = new BABYLON.Color4(0, 0, 0, 0.0);
             trail.minSize = 0.2; trail.maxSize = 0.6; trail.minLifeTime = 0.2; trail.maxLifeTime = 0.5; trail.emitRate = 400;
             trail.createPointEmitter(new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(0, -1, 0));
@@ -157,7 +157,7 @@ export function createScene(engine, canvas) {
             b = BABYLON.MeshBuilder.CreateSphere("bullet", {diameter: 1.0}, scene);
             mat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2); mat.specularColor = new BABYLON.Color3(0.8, 0.8, 0.8);
             const trail = new BABYLON.ParticleSystem("trail", 100, scene);
-            trail.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/cloud.png", scene);
+            trail.particleTexture = new BABYLON.Texture("textures/cloud.png", scene);
             trail.emitter = b; trail.color1 = new BABYLON.Color4(0.4, 0.4, 0.4, 0.5); trail.color2 = new BABYLON.Color4(0.1, 0.1, 0.1, 0.2); trail.colorDead = new BABYLON.Color4(0, 0, 0, 0.0);
             trail.minSize = 0.5; trail.maxSize = 1.2; trail.minLifeTime = 0.3; trail.maxLifeTime = 0.8; trail.emitRate = 100;
             trail.createSphereEmitter(0.5); trail.minEmitPower = 0; trail.maxEmitPower = 0.5; trail.updateSpeed = 0.02; trail.start();
@@ -189,7 +189,7 @@ export function createScene(engine, canvas) {
         bullet.material = mat; 
         
         const trail = new BABYLON.ParticleSystem("acidTrail", 100, scene);
-        trail.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/flare.png", scene);
+        trail.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
         trail.emitter = bullet;
         trail.color1 = new BABYLON.Color4(0.2, 1.0, 0.2, 0.8);
         trail.color2 = new BABYLON.Color4(0.8, 1.0, 0.2, 0.4);
@@ -207,7 +207,7 @@ export function createScene(engine, canvas) {
 
     let coinContainer = null;
     const activeCoins = [];
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "coin.glb", scene, (container) => { coinContainer = container; });
+    BABYLON.SceneLoader.LoadAssetContainer("models/", "coin.glb", scene, (container) => { coinContainer = container; });
 
     const spawnCoinAt = (pos) => {
         if (!coinContainer) return;
@@ -275,21 +275,21 @@ export function createScene(engine, canvas) {
     const enemies = [];
     let zombieContainer = null, baseRunAnim = null, baseAttackAnim = null, loadedCount = 0;
     
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "zombie_run.glb", scene, (container) => {
+    BABYLON.SceneLoader.LoadAssetContainer("models/", "zombie_run.glb", scene, (container) => {
         zombieContainer = container; 
         if (container.animationGroups && container.animationGroups.length > 0) baseRunAnim = container.animationGroups[0];
         checkAllLoaded();
     });
-    BABYLON.SceneLoader.ImportMesh("", "/models/", "zombie_attack.glb", scene, (meshes, particleSystems, skeletons, animationGroups) => {
+    BABYLON.SceneLoader.ImportMesh("", "models/", "zombie_attack.glb", scene, (meshes, particleSystems, skeletons, animationGroups) => {
         meshes[0].position.y = -1000; meshes.forEach(m => m.isVisible = false); 
         if (animationGroups.length > 0) { baseAttackAnim = animationGroups[0]; baseAttackAnim.stop(); }
         checkAllLoaded();
     });
 
     let bossContainer = null;
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "zombie_boss.glb", scene, (container) => { bossContainer = container; }, null, () => {});
+    BABYLON.SceneLoader.LoadAssetContainer("models/", "zombie_boss.glb", scene, (container) => { bossContainer = container; }, null, () => {});
     let kamikazeContainer = null;
-    BABYLON.SceneLoader.LoadAssetContainer("/models/", "zombie_kamikaze.glb", scene, (container) => { kamikazeContainer = container; }, null, () => {});
+    BABYLON.SceneLoader.LoadAssetContainer("models/", "zombie_kamikaze.glb", scene, (container) => { kamikazeContainer = container; }, null, () => {});
 
     function checkAllLoaded() { loadedCount++; if (loadedCount === 2) for (let i = 0; i < 8; i++) spawnEnemy(); }
 
