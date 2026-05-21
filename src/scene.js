@@ -60,10 +60,21 @@ export function createScene(engine, canvas) {
             audioManager.setupAudioContextUnlock();
             audioManager.playSound("backgroundMusic");
             if (GameState.isTesterMode) {
-                GameState.coinsCount = 100;
+                GameState.coinsCount = 500;
+                GameState.lives = 5;
                 GameState.unlockedAmmo = { base: true, smg: true, missile: true, heavy: true };
-                ui.coinsText.text = "COINS: 100";
+                ui.coinsText.text = "COINS: 500";
+                ui.livesText.text = "LIVES: 5";
                 ui.updateAmmoUI();
+
+                ui.buySmgBtn.textBlock.text = "OWNED";
+                ui.buySmgBtn.background = "gray";
+                
+                ui.buyMissileBtn.textBlock.text = "OWNED";
+                ui.buyMissileBtn.background = "gray";
+                
+                ui.buyHeavyBtn.textBlock.text = "OWNED";
+                ui.buyHeavyBtn.background = "gray";
             }
         },
         onPauseToggle: () => {

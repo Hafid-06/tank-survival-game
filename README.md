@@ -119,7 +119,7 @@ Eliminate as many zombies as possible to get the highest score and collect coins
 
 ## Tester Mode
 
-We want everyone to be able to test the game mechanics easily. That's why we included a "Tester Mode." This mode gives you 100 coins and all bullet types unlocked right from the start. It's perfect if you want to dive straight into the action and test out our upgrade system or enemy behavior without the grind.
+We want everyone to be able to test the game mechanics easily. That's why we included a "Tester Mode." This mode gives you 500 coins, 5 lives, and all bullet types unlocked right from the start. It's perfect if you want to dive straight into the action and test out our upgrade system or enemy behavior without the grind.
 
 ## Gameplay & Intelligence
 
