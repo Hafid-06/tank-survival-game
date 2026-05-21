@@ -8,6 +8,9 @@ Group members:
 - EL JAGHAOUI Abdelhafid
 - BACHA Hiba
 
+## Gameplay Screenshot 
+
+<img src="./public/images/gameplay.png" alt="Tank Survival Gameplay" width="800">
 
 ## The game is available at:
 
@@ -19,25 +22,18 @@ Group members:
 
 ## Development Story & Team
 
-Hi! We are Abdelhafid and Hiba. Building *Tank Survival* was an intense but incredibly rewarding journey for both of us. We didn't just want to create a game; we wanted to build an experience where the environment felt truly reactive.
+Hi! We are Abdelhafid and Hiba, Master 1 Computer Science students at Université Côte d'Azur. Building *Tank Survival* was an intense but incredibly rewarding journey for both of us. We didn't just want to create a game; we wanted to build an experience where the environment felt truly reactive. We are really proud of what we've built, and we hope you have as much fun playing it as we had developing it.
 
-**Our Challenges:**
-Our biggest hurdle was definitely the "Game Director." Balancing the spawning logic to create a consistent challenge was a constant back-and-forth. We also spent a lot of time debugging our autonomous ally—getting it to feel like a helpful partner rather than just another obstacle on the map took way more iteration than we initially expected!
+## Prerequisites (to run locally)
 
-Additionally, we faced a major technical challenge with assets and hitboxes. We had to manually adjust and test the collision boundaries for every enemy and decor element to ensure they matched the visual models perfectly. It was a tedious process of trial and error, but ensuring that the physical collision felt precise and natural was essential for the game to feel satisfying.
-
-**Tester Mode:**
-We want everyone to be able to test the game mechanics easily. That’s why we included a "Tester Mode." This mode gives you 100 coins and all bullet types unlocked right from the start. It's perfect if you want to dive straight into the action and test out our upgrade system or enemy behavior without the grind.
-
-We are really proud of what we’ve built, and we hope you have as much fun playing it as we had developing it.
+- Node.js (v18 or higher)
+- A modern browser with WebGL2 support (Chrome, Firefox, Edge)
 
 ## How to run the game locally: 
 
 - `git clone https://github.com/gamesonweb/ia-edition-tank-survival.git`
 
 - Navigate to the project directory: `cd ia-edition-tank-survival`
-
-- `git lfs install`
 
 - `npm install`
 
@@ -117,6 +113,10 @@ Collect coins by defeating zombies and spend them in the shop to upgrade your ar
 
 Eliminate as many zombies as possible to get the highest score and collect coins to buy upgrades.
 
+## Tester Mode
+
+We want everyone to be able to test the game mechanics easily. That's why we included a "Tester Mode." This mode gives you 100 coins and all bullet types unlocked right from the start. It's perfect if you want to dive straight into the action and test out our upgrade system or enemy behavior without the grind.
+
 ## Gameplay & Intelligence
 
 You might notice that the enemies in this game behave in clever, reactive ways, that’s the "Game AI" working behind the scenes.
@@ -130,15 +130,17 @@ We use these techniques as a tool to make the gameplay lively and fun. Here is h
 
 ## Our Challenges
 
-Our Technical and Design Challenges:
+Building *Tank Survival* was an intense but incredibly rewarding journey for both of us. We didn't just want to create a game; we wanted to build an experience where the environment felt truly reactive.
 
-* **The "Game Director"**: One of our main challenges was creating a dynamic enemy management system. The "Game Director" doesn't just spawn zombies randomly; it analyzes the wave level, the player's score, and health in real-time to adjust the difficulty. This system allows for the gradual introduction of tactical threats (like Spitters) or brute force enemies (like Kamikazes), ensuring the difficulty progression feels natural and balanced.
+* **The "Game Director"**: One of our main challenges was creating a dynamic enemy management system. The "Game Director" doesn't just spawn zombies randomly; it analyzes the wave level, the player's score, and health in real-time to adjust the difficulty. This system allows for the gradual introduction of tactical threats (like Spitters) or brute force enemies (like Kamikazes), ensuring the difficulty progression feels natural and balanced. Balancing the spawning logic to create a consistent challenge was a constant back-and-forth.
 
-* **Hitbox Calibration**: We spent a significant amount of time manually fine-tuning the collision zones for every enemy and decor element. This phase of repetitive testing was crucial to achieving precise gameplay, where every shot and physical interaction perfectly matches the visual model.
+* **Hitbox Calibration**: We spent a significant amount of time manually fine-tuning the collision zones for every enemy and decor element. This phase of repetitive testing was crucial to achieving precise gameplay, where every shot and physical interaction perfectly matches the visual model. It was a tedious process of trial and error, but ensuring that the physical collision felt precise and natural was essential for the game to feel satisfying.
 
-* **Ally Behavior**: Developing the autonomous ally's intelligence was complex. It had to act as an intelligent partner capable of prioritizing dangerous targets and navigating the environment without blocking the player's path. This required many iterations of targeting and navigation logic. One of our biggest achievements and sources of pride was making the ally feel truly useful and natural during gameplay, almost like a real teammate helping the player survive.
+* **Ally Behavior**: Developing the autonomous ally's intelligence was complex. It had to act as an intelligent partner capable of prioritizing dangerous targets and navigating the environment without blocking the player's path. Getting it to feel like a helpful partner rather than just another obstacle on the map took way more iteration than we initially expected. One of our biggest achievements and sources of pride was making the ally feel truly useful and natural during gameplay, almost like a real teammate helping the player survive.
 
 * **Deployment Optimization**: Hosting the game was a technical trial. Our large 3D models made the game run very slowly on GitHub Pages. When moving to Vercel, we encountered file size limits. We resolved these issues by manually optimizing and compressing our GLB assets, which allowed us to maintain high visual fidelity while ensuring optimal gameplay fluidity for users.
+
+We are really proud of what we've built, and we hope you have as much fun playing it as we had developing it.
 
 ## Tech Stack
 
