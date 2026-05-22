@@ -18,7 +18,7 @@ Group members:
 
 ## Gameplay Video
 
-## <a href="https://www.youtube.com/watch?v=UisMbdh2TcE" target="_blank">🎥 Watch the video</a>
+## [🎥 Watch the video](https://www.youtube.com/watch?v=UisMbdh2TcE)
 
 ## Development Story & Team
 
