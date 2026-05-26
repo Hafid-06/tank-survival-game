@@ -20,6 +20,8 @@ Group members:
 
 ## [🎥 Watch the video](https://www.youtube.com/watch?v=UisMbdh2TcE)
 
+## [🎥 Watch the gameplay video for our game](https://www.youtube.com/watch?v=HhHvQMm7tws)
+
 ## Development Story & Team
 
 Hi! We are Abdelhafid and Hiba, Master 1 Computer Science students at Université Côte d'Azur. Building *Tank Survival* was an intense but incredibly rewarding journey for both of us. We didn't just want to create a game; we wanted to build an experience where the environment felt truly reactive. We are really proud of what we've built, and we hope you have as much fun playing it as we had developing it.
