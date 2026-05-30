@@ -79,7 +79,7 @@ You aren't just fighting one type of zombie. The horde evolves as you survive, i
 
 * **Rusher (Wave 1):** The standard zombie.
 * **Flanker (Wave 3):** Smarter than the average zombie; moves in unpredictable patterns to surround you.
-* **Charger / Boss (Wave 5):** A heavy-hitting mini-boss with a large health pool. Keep your distance!
+* **Charger / Boss (Wave 5):** A heavy-hitting boss with a large health pool. Keep your distance!
 * **Spitter (Wave 5):** A tactical threat; stays at a distance and launches acidic projectiles at your tank.
 * **Kamikaze (Wave 7):** An explosive threat; moves at high speed and detonates on impact. Do not let them touch you!
 
@@ -145,7 +145,7 @@ Building *Tank Survival* was an intense but incredibly rewarding journey for bot
 
 * **Ally Behavior**: Developing the autonomous ally's intelligence was complex. It had to act as an intelligent partner capable of prioritizing dangerous targets and navigating the environment without blocking the player's path. Getting it to feel like a helpful partner rather than just another obstacle on the map took way more iteration than we initially expected. One of our biggest achievements and sources of pride was making the ally feel truly useful and natural during gameplay, almost like a real teammate helping the player survive.
 
-* **Deployment Optimization**: Hosting the game was a technical trial. Our large 3D models made the game run very slowly on GitHub Pages. When moving to Vercel, we encountered file size limits. We resolved these issues by manually optimizing and compressing our GLB assets, which allowed us to maintain high visual fidelity while ensuring optimal gameplay fluidity for users.
+* **Deployment Optimization**: Hosting the game proved challenging. Our large 3D models caused performance issues on GitHub Pages, and we hit file size limits when attempting to deploy on Vercel. We resolved these issues by manually optimizing and compressing our GLB assets to reduce the overall project size. Finally, we chose to host the project on itch.io, as it handles larger file uploads more effectively while ensuring a fluid experience for players.
 
 We are really proud of what we've built, and we hope you have as much fun playing it as we had developing it.
 
